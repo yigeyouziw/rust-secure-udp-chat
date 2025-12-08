@@ -37,3 +37,12 @@
 # 假设你已克隆项目
 cd p2p_secure_chat
 cargo run --release
+
+## Download
+   
+   Download the latest release from [Releases](https://github.com/yigeyouziw/rust-secure-udp-chat/releases/latest)
+   
+   ### Supported Platforms
+   - Linux (AMD64, ARM64)
+   - Windows (AMD64)
+   - macOS (Intel, Apple Silicon)
