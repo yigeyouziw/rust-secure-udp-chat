@@ -1,0 +1,84 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+permissions:
+  contents: write
+env:
+  BINARY_NAME: p2p_secure_chat
+jobs:
+  build-and-upload:
+    name: Build ${{ matrix.artifact_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # --- Linux ---
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: p2p_secure_chat-linux-amd64
+            asset_extension: ""
+            use_cross: false
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: p2p_secure_chat-linux-arm64
+            asset_extension: ""
+            use_cross: true
+          # --- Windows ---
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: p2p_secure_chat-windows-amd64
+            asset_extension: ".exe"
+            use_cross: false
+          # --- macOS ---
+          # macOS Intel (使用 macos-15-large 确保是 Intel 环境)
+          - os: macos-15-large
+            target: x86_64-apple-darwin
+            artifact_name: p2p_secure_chat-darwin-amd64
+            asset_extension: ""
+            use_cross: false
+          # macOS Apple Silicon (macos-latest 现在是 ARM64)
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: p2p_secure_chat-darwin-arm64
+            asset_extension: ""
+            use_cross: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      
+      - name: Install Cross
+        if: matrix.use_cross
+        uses: taiki-e/install-action@cross
+      
+      - name: Build with cargo
+        if: ${{ !matrix.use_cross }}
+        run: cargo build --release --locked --target ${{ matrix.target }}
+      
+      - name: Build with cross
+        if: matrix.use_cross
+        run: cross build --release --locked --target ${{ matrix.target }}
+      
+      - name: Rename binary
+        shell: bash
+        run: |
+          ORIGINAL_PATH="target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}"
+          NEW_NAME="${{ matrix.artifact_name }}${{ matrix.asset_extension }}"
+          
+          echo "Moving $ORIGINAL_PATH to $NEW_NAME"
+          mv "$ORIGINAL_PATH" "$NEW_NAME"
+          
+          echo "ASSET=$NEW_NAME" >> $GITHUB_ENV
+      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.ASSET }}
