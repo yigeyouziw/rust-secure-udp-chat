@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # --- Linux ---
+          # --- Linux (免费) ---
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact_name: p2p_secure_chat-linux-amd64
@@ -26,23 +26,21 @@ jobs:
             artifact_name: p2p_secure_chat-linux-arm64
             asset_extension: ""
             use_cross: true
-          # --- Windows ---
+          # --- Windows (免费) ---
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: p2p_secure_chat-windows-amd64
             asset_extension: ".exe"
             use_cross: false
-          # --- macOS ---
-          # macOS Intel (使用 macos-15-large 确保是 Intel 环境)
-          - os: macos-15-large
-            target: x86_64-apple-darwin
-            artifact_name: p2p_secure_chat-darwin-amd64
-            asset_extension: ""
-            use_cross: false
-          # macOS Apple Silicon (macos-latest 现在是 ARM64)
+          # --- macOS (免费，在 ARM 上交叉编译 Intel) ---
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: p2p_secure_chat-darwin-arm64
+            asset_extension: ""
+            use_cross: false
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: p2p_secure_chat-darwin-amd64
             asset_extension: ""
             use_cross: false
     steps:
